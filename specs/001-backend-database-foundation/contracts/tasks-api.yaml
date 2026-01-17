@@ -1,0 +1,261 @@
+openapi: 3.0.3
+info:
+  title: Todo API
+  description: API for managing todo tasks with user authentication
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.todo-app.com
+    description: Production server
+
+paths:
+  /api/tasks:
+    get:
+      summary: List all tasks for authenticated user
+      description: Retrieve a list of tasks belonging to the authenticated user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Successful response with list of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new task
+      description: Create a new task for the authenticated user
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Bad request - Validation error
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '422':
+          description: Unprocessable entity - Request validation error
+
+  /api/tasks/{task_id}:
+    get:
+      summary: Get a specific task
+      description: Retrieve details of a specific task by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the task
+      responses:
+        '200':
+          description: Task retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '404':
+          description: Task not found
+        '422':
+          description: Invalid task ID format
+    put:
+      summary: Update a specific task
+      description: Update details of a specific task by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          description: Bad request - Validation error
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '404':
+          description: Task not found
+        '409':
+          description: Conflict - Concurrent modification detected (optimistic lock)
+        '422':
+          description: Invalid task ID format
+    delete:
+      summary: Delete a specific task
+      description: Delete a specific task by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the task
+      responses:
+        '204':
+          description: Task deleted successfully
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '404':
+          description: Task not found
+        '422':
+          description: Invalid task ID format
+
+  /api/tasks/{task_id}/toggle:
+    patch:
+      summary: Toggle task completion status
+      description: Toggle the completion status of a specific task
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique identifier of the task
+      responses:
+        '200':
+          description: Task completion status toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '401':
+          description: Unauthorized - Invalid or missing JWT token
+        '404':
+          description: Task not found
+        '409':
+          description: Conflict - Concurrent modification detected (optimistic lock)
+        '422':
+          description: Invalid task ID format
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    TaskResponse:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - user_id
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the task
+          example: "task-uuid-here"
+        title:
+          type: string
+          description: Title of the task (1-200 characters)
+          example: "Complete project documentation"
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Optional description of the task
+          example: "Finish writing the API documentation"
+        completed:
+          type: boolean
+          description: Whether the task is completed
+          example: false
+        user_id:
+          type: string
+          description: ID of the user who owns this task
+          example: "user-uuid-here"
+        version:
+          type: integer
+          description: Version number for optimistic locking
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was created
+          example: "2026-01-14T10:00:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was last updated
+          example: "2026-01-14T10:00:00Z"
+
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          description: Title of the task (1-200 characters)
+          example: "Complete project documentation"
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Optional description of the task
+          example: "Finish writing the API documentation"
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Updated title of the task (1-200 characters)
+          example: "Complete project documentation"
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          description: Updated description of the task
+          example: "Finish writing the API documentation"
+        completed:
+          type: boolean
+          description: Updated completion status
+          example: true
+        version:
+          type: integer
+          description: Current version number for optimistic locking (required for update)
+          example: 1

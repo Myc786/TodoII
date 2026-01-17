@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \".specify/scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly\")",
+      "Bash(powershell -Command \".specify/scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
+      "Bash(export BETTER_AUTH_SECRET=\"your_shared_secret_key_here\")",
+      "Bash(python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload)",
+      "Bash(npm install)",
+      "Bash(python test_integration.py)",
+      "Bash(python -m src.main)",
+      "Bash(npm run dev)",
+      "Bash(curl -s http://localhost:8000/docs)",
+      "Bash(curl -s -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d \"{\"\"email\"\":\"\"test@example.com\"\", \"\"password\"\":\"\"password123\"\"}\")",
+      "Bash(curl -X POST http://localhost:8000/api/auth/login -H \"Content-Type: application/json\" -d \"{\"\"email\"\":\"\"testuser2@example.com\"\",\"\"password\"\":\"\"password123\"\"}\")",
+      "Bash(curl -X GET http://localhost:3010)",
+      "Bash(tasklist)",
+      "Bash(findstr \"node\")",
+      "Bash(curl -v -X POST http://localhost:8000/api/tasks -H \"Content-Type: application/json\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NGNiMDhjMS01YzRmLTQyNWEtYjA1YS0yYTA2ZmFiMDZkMmYiLCJlbWFpbCI6InRlc3R1c2VyMkBleGFtcGxlLmNvbSIsImV4cCI6MTc2ODUwMzM4MH0.NiZOXMikRXojgZD5vqHu7hj2yvGJceaxCSDW8DthSTA\" -d \"{\"\"title\"\":\"\"Test task\"\",\"\"description\"\":\"\"This is a test task\"\"}\")",
+      "Bash(curl -X PUT http://localhost:8000/api/tasks/24ce63bf-5a17-4109-b23e-f0287d6e8270 -H \"Content-Type: application/json\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NGNiMDhjMS01YzRmLTQyNWEtYjA1YS0yYTA2ZmFiMDZkMmYiLCJlbWFpbCI6InRlc3R1c2VyMkBleGFtcGxlLmNvbSIsImV4cCI6MTc2ODUwMzcxMX0.0rQ7rlXWS5LBEDyYcEVZvU3VbTANsfGf6zwFY0Or2vk\" -d \"{\"\"title\"\":\"\"Updated test task\"\",\"\"description\"\":\"\"This is an updated test task\"\",\"\"version\"\":2}\")",
+      "Bash(curl -X GET http://localhost:8000/api/tasks/ -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3NGNiMDhjMS01YzRmLTQyNWEtYjA1YS0yYTA2ZmFiMDZkMmYiLCJlbWFpbCI6InRlc3R1c2VyMkBleGFtcGxlLmNvbSIsImV4cCI6MTc2ODUwMzcxMX0.0rQ7rlXWS5LBEDyYcEVZvU3VbTANsfGf6zwFY0Or2vk\")",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3010)",
+      "Bash(findstr node)",
+      "Bash(powershell \"Stop-Process -Id 11560 -Force\")",
+      "Skill(sp.phr)",
+      "Bash(xargs ls -la)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(powershell -Command \"Invoke-RestMethod -Uri http://localhost:3000 -Method Get\")",
+      "Bash(curl -s -I http://localhost:3000/login)",
+      "Bash(curl -X POST http://localhost:8000/api/auth/register -H \"Content-Type: application/json\" -d \"{\"\"email\"\":\"\"newuser@example.com\"\",\"\"password\"\":\"\"password123\"\",\"\"name\"\":\"\"New User\"\"}\")",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(taskkill /IM node.exe /F)",
+      "Bash(findstr :3000)",
+      "Bash(find specs/ -name \"*.md\" -exec grep -l \"theme\\\\|day\\\\|night\\\\|dark\\\\|light\\\\|completion\" {} ;)",
+      "Bash(npm install next-themes)",
+      "Bash(git add .)",
+      "Bash(del nul)",
+      "Bash(git add -A)"
+    ]
+  }
+}
