@@ -35,7 +35,10 @@
       "Bash(npm install next-themes)",
       "Bash(git add .)",
       "Bash(del nul)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git push -u origin master)",
+      "Bash(git rm -r --cached frontend/node_modules)",
+      "Bash(git rm -r --cached frontend/.next)"
     ]
   }
 }
