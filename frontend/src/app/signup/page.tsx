@@ -31,9 +31,20 @@ export default function SignupPage() {
     return null; // Will be redirected by useEffect
   }
 
+  const handleSignupSuccess = () => {
+    router.push('/dashboard');
+  };
+
+  const handleSwitchToLogin = () => {
+    router.push('/login');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <SignupForm />
+      <SignupForm
+        onSignupSuccess={handleSignupSuccess}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
     </div>
   );
 }

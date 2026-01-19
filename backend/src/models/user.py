@@ -17,10 +17,12 @@ class User(UserBase, table=True):
         id: Unique identifier for the user
         email: User's email address (used for authentication)
         name: User's display name
+        password: Hashed password for authentication
         created_at: Timestamp when the user was created
         updated_at: Timestamp when the user was last updated
     """
     id: Optional[uuid.UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
+    password: Optional[str] = Field(default=None)  # Store hashed password
     created_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default_factory=datetime.utcnow)
     is_active: bool = Field(default=True)

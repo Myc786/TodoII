@@ -1,13 +1,10 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union, TYPE_CHECKING
+from typing import Optional, Union, Any
 import os
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from sqlmodel import Session
-
-if TYPE_CHECKING:
-    from ..models.user import User
 
 from ..database.session import get_session
 
@@ -48,18 +45,16 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def authenticate_user(db_user: User, password: str) -> Optional[User]:
+def authenticate_user(db_user: Any, password: str) -> Optional[Any]:
     """
     Authenticate a user by verifying their password.
-    Note: In our current implementation, we're not storing password hashes in the User model
-    since the spec didn't explicitly require it. This function is kept for extensibility.
 
     Args:
         db_user: The user object from the database
-        password: The plain text password to verify (not used in current implementation)
+        password: The plain text password to verify
 
     Returns:
-        User: The user object if authentication would succeed
+        User: The user object if authentication succeeds
     """
     # In this implementation, we're relying on JWT token validation
     # rather than password verification for each request

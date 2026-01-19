@@ -1,8 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .api.routes import router as api_router
-from .core.config import ENVIRONMENT
-from .core import logging_config
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.api.routes import router as api_router
+from src.core.config import ENVIRONMENT
+from src.core import logging_config
 import logging
 
 

@@ -102,8 +102,8 @@ export default function LoginForm({ onLoginSuccess, onSwitchToSignup }: LoginFor
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
 
-            {onSwitchToSignup && (
-              <div className="mt-4 text-center text-sm">
+            <div className="mt-4 text-center text-sm">
+              <div>
                 Don't have an account?{' '}
                 <button
                   type="button"
@@ -114,7 +114,15 @@ export default function LoginForm({ onLoginSuccess, onSwitchToSignup }: LoginFor
                   Sign up
                 </button>
               </div>
-            )}
+              <div className="mt-2">
+                <a
+                  href="/forgot-password"
+                  className="text-blue-600 hover:underline text-glow"
+                >
+                  Forgot Password?
+                </a>
+              </div>
+            </div>
           </CardFooter>
         </form>
       </div>

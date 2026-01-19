@@ -8,6 +8,7 @@ from ...database.session import get_session
 from ..deps import get_current_user
 from jose import JWTError
 import uuid
+from ...core.security import get_password_hash, verify_password
 
 
 router = APIRouter()
@@ -39,12 +40,12 @@ def register_user(
             detail="A user with this email already exists"
         )
 
-    # Create new user instance
-    # Note: In a real implementation, we'd hash the password before storing
+    # Create new user instance with hashed password
+    hashed_password = get_password_hash(user_create.password)
     db_user = User(
         email=user_create.email,
         name=user_create.name,
-        # In a real app, we'd hash the password: hashed_password=get_password_hash(user_create.password)
+        password=hashed_password
     )
 
     # Add user to database
@@ -92,13 +93,13 @@ def login_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Verify password (in real implementation, compare hashed password)
-    # if not verify_password(password, user.hashed_password):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Incorrect email or password",
-    #         headers={"WWW-Authenticate": "Bearer"},
-    #     )
+    # Verify password using the stored hashed password
+    if not user.password or not verify_password(password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     # Create JWT access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

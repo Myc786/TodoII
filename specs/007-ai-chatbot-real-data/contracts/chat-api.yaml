@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+  title: Chat API with MCP Tool Integration for Todo Application
+  version: 1.0.0
+  description: API contracts for chatbot functionality with real data operations using MCP tools
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://api.todoapp.com
+    description: Production server
+
+paths:
+  /api/chat:
+    post:
+      summary: Process natural language command using MCP tools
+      description: Processes a user's natural language command and executes appropriate MCP tools to operate on real task data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  description: The user's natural language command
+                  example: "Add a task to buy groceries"
+                user_id:
+                  type: string
+                  description: The ID of the authenticated user (optional, extracted from JWT)
+                  example: "user-12345"
+      responses:
+        '200':
+          description: Successful response from the chatbot with real data results
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - success
+                properties:
+                  message:
+                    type: string
+                    description: The chatbot's natural language response
+                    example: "I've created a task 'buy groceries' for you."
+                  success:
+                    type: boolean
+                    description: Whether the operation was successful
+                    example: true
+                  action:
+                    type: string
+                    description: The action taken by the chatbot
+                    enum: [task_created, task_updated, task_deleted, task_listed, greeting]
+                  task_id:
+                    type: string
+                    description: ID of the task affected by the action (if applicable)
+                    example: "task-67890"
+        '400':
+          description: Bad request - invalid input or command
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - user attempting to access another user's data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error - MCP tool execution failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/chat/intent:
+    post:
+      summary: Identify intent from natural language command
+      description: Identifies the intent from a user's natural language command without executing actions
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - message
+              properties:
+                message:
+                  type: string
+                  description: The user's natural language command
+                  example: "Show me my completed tasks"
+      responses:
+        '200':
+          description: Intent successfully identified
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - intent
+                  - confidence
+                properties:
+                  intent:
+                    type: string
+                    description: The identified intent
+                    enum: [create_task, list_tasks, update_task, complete_task, delete_task, query_completed_tasks, greeting]
+                    example: "query_completed_tasks"
+                  confidence:
+                    type: number
+                    description: Confidence score for the intent identification
+                    example: 0.95
+                  parameters:
+                    type: object
+                    description: Parameters extracted from the command
+                    example: {}
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - success
+        - detail
+      properties:
+        success:
+          type: boolean
+          example: false
+        detail:
+          type: string
+          description: Error message
+          example: "Invalid authentication token"

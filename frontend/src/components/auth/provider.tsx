@@ -36,7 +36,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       if (token && userData) {
         try {
           // Validate the token by fetching user profile
-          const response = await fetch('http://localhost:8000/api/auth/me', {
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+          const response = await fetch(`${API_BASE_URL.replace('/api', '')}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -67,7 +68,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Login function - calling the backend API directly
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/login', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,6 +87,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         if (data.access_token) {
           localStorage.setItem('access_token', data.access_token);
           localStorage.setItem('user', JSON.stringify(data.user));
+
+          // Update the session state to reflect the new authentication status
+          setSession({ user: data.user });
         }
         return { ok: true, ...data };
       } else {
@@ -99,7 +104,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Register function - calling the backend API directly
   const register = async (email: string, password: string, name: string) => {
     try {
-      const response = await fetch('http://localhost:8000/api/auth/register', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,15 +138,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
 
+      // Update the session state to reflect the logout
+      setSession(null);
+
       // Call backend logout endpoint
-      await fetch('http://localhost:8000/api/auth/logout', {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      await fetch(`${API_BASE_URL.replace('/api', '')}/auth/logout`, {
         method: 'POST',
       });
     } catch (error) {
       console.error('Logout error:', error);
-      // Still remove local data even if backend call fails
+      // Still remove local data and update session state even if backend call fails
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      setSession(null);
     }
   };
 

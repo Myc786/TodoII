@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthWrapper } from '@/components/auth/auth-wrapper';
 import { ThemeProvider } from '@/contexts/theme-context';
+import { AuthenticatedChatWidget } from '@/components/chatbot/authenticated-chat-widget';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <AuthWrapper>
             {children}
+            <AuthenticatedChatWidget />
           </AuthWrapper>
         </ThemeProvider>
       </body>

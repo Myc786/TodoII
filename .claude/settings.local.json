@@ -38,7 +38,29 @@
       "Bash(git add -A)",
       "Bash(git push -u origin master)",
       "Bash(git rm -r --cached frontend/node_modules)",
-      "Bash(git rm -r --cached frontend/.next)"
+      "Bash(git rm -r --cached frontend/.next)",
+      "Bash(git commit -m \"fix: Correct ThemeProvider import in root layout to enable theme toggle\n\n- Update layout.tsx to use custom ThemeProvider from theme-context.tsx\n- This ensures proper integration between ThemeToggle and theme system\n- Fixes issue where theme toggle was not appearing in header\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\")",
+      "Bash(git fetch --all --prune)",
+      "Bash(.specify/scripts/powershell/create-new-feature.ps1 -Json \"$ARGUMENTS\" --json --number 1 --short-name \"ai-chatbot-extension\" \"Phase III – AI-Powered Todo Chatbot Extension\")",
+      "Bash(dir backend)",
+      "Bash(pip show modelcontextprotocol)",
+      "Bash(pip install -r requirements.txt)",
+      "Bash(uvicorn src.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl http://localhost:8001/health)",
+      "Bash(curl http://localhost:8000/health)",
+      "Skill(sp.specify)",
+      "Bash(dir specs)",
+      "Bash(findstr -E \"^[0-9]+-chatbot-ui-visibility\")",
+      "Bash(dir specs /AD /B)",
+      "Bash(.specify/scripts/powershell/setup-plan.ps1 -Json)",
+      "Bash(npm install date-fns)",
+      "Bash(dir \"D:\\\\part2\\\\backend\\\\src\\\\api\\\\routes\")",
+      "Bash(dir \"D:\\\\part2\\\\backend\\\\src\\\\mcp_tools\")",
+      "Bash(python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 --reload)",
+      "Bash(timeout 5 cmd /c \"type C:\\\\Users\\\\lenovo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--part2\\\\tasks\\\\b0ab243.output\")",
+      "Bash(python -c \"\nimport sqlite3\nimport json\nconn = sqlite3.connect\\(''todo_app.db''\\)\ncursor = conn.cursor\\(\\)\ncursor.execute\\(''SELECT * FROM user;''\\)\nusers = cursor.fetchall\\(\\)\nprint\\(''Users in database:''\\)\nfor user in users:\n    print\\(user\\)\nconn.close\\(\\)\n\")",
+      "Bash(python -c \"\nimport sqlite3\nconn = sqlite3.connect\\(''todo_app.db''\\)\ncursor = conn.cursor\\(\\)\n\n# Check current table structure\ncursor.execute\\(''PRAGMA table_info\\(user\\);''\\)\ncolumns = cursor.fetchall\\(\\)\nprint\\(''Current columns in user table:''\\)\nfor col in columns:\n    print\\(col\\)\n\nconn.close\\(\\)\n\")",
+      "Bash(dir specs008-auth-ux-navigation-fixes)"
     ]
   }
 }
