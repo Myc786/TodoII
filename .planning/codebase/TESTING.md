@@ -1,99 +1,93 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
 ## Test Framework
 
-**Runner:**
-- Pytest [7.4.0+] - Backend Python tests
-- Config: `pyproject.toml` (Poetry configuration)
+**Backend:**
+- Runner: pytest (from pyproject.toml dependencies)
+- Config: Not explicitly configured in standard pytest.ini/pyproject.toml sections
+- Assertion Library: Built-in Python assertions and pytest assertions
 - Run Commands:
 ```bash
-pytest                          # Run all tests
-pytest --cov=src               # Run with coverage
-pytest tests/unit             # Run unit tests only
-pytest tests/integration    # Run integration tests only
+pytest                           # Run all tests
+pytest --cov                     # Run with coverage
+pytest tests/                    # Run tests in specific directory
 ```
 
-**Assertion Library:**
-- Pytest built-in assertions
-
-**Frontend Testing:**
-- Not currently implemented (no *.test.* or *.spec.* files found)
+**Frontend:**
+- Testing: Not implemented (no Jest, Vitest, or other frontend test frameworks detected)
 
 ## Test File Organization
 
 **Location:**
-- Backend tests: `backend/tests/` directory with subdirectories for different test types
-- Unit tests: `backend/tests/unit/`
-- Integration tests: `backend/tests/integration/`
-- Contract tests: `backend/tests/contract/`
+- Backend: `backend/tests/` directory and standalone test files in `backend/`
+- Frontend: No test files detected
 
 **Naming:**
-- Test files: `test_*.py` or `*_test.py` pattern
-- Test functions: `test_*` prefix (e.g., `test_register_new_user`)
-
-**Structure:**
+- Python: `test_*.py` and `*_test.py` patterns (e.g., `test_crud_endpoints.py`, `test_auth.py`)
+- Structure:
 ```
-backend/tests/
-├── unit/           # Unit tests for individual functions/classes
-├── integration/    # Integration tests for API endpoints
-├── contract/       # Contract tests for API compliance
-└── *.py           # Standalone test files
+backend/
+├── test_*.py           # Standalone test files
+└── tests/              # Test package directory
+    ├── test_*.py       # Module-specific tests
+    └── conftest.py     # Test configuration (if exists)
 ```
 
 ## Test Structure
 
-**Suite Organization:**
+**Backend Test Patterns:**
 ```python
-def test_specific_behavior():
+def test_specific_functionality():
     """Descriptive docstring explaining what is being tested."""
-    # Arrange
-    # Setup test data
+    # Setup
+    test_data = {...}
 
-    # Act
-    # Execute the function/method being tested
+    # Execution
+    result = function_or_api_call(test_data)
 
-    # Assert
-    # Verify expected outcomes
+    # Assertions
+    assert result.condition == expected_value
+    assert "key" in result_dict
 ```
 
-**Patterns:**
-- Arrange-Act-Assert structure
-- Descriptive function names
-- Docstrings for test purpose explanation
-- Print statements for debugging test runs
+**API Integration Tests:**
+- Use requests library to make actual HTTP calls
+- Test both positive and negative cases
+- Include comprehensive status code assertions
+- Verify response structure and content
+
+**Service Layer Tests:**
+- Direct instantiation and method calls
+- Database session management
+- Transaction rollbacks for cleanup
+- Comprehensive CRUD operation testing
 
 ## Mocking
 
-**Framework:** Not explicitly using mock library in current tests
-
-**Patterns:**
-- Currently using real HTTP requests to test API endpoints
-- Test isolation achieved through unique test data generation (UUIDs)
-- Environment variables for test configuration
-
-**What to Mock:**
-- External API calls
-- Database connections in unit tests
-- Time-dependent operations
+**Backend:**
+- Framework: Not explicitly using mocking library (unittest.mock or pytest-mock)
+- Patterns: Manual test data generation (e.g., uuid.uuid4() for unique emails)
+- What to Mock: Not commonly used; prefer real database interactions for integration tests
+- What NOT to Mock: Database connections and core business logic
 
 ## Fixtures and Factories
 
 **Test Data:**
 ```python
-# Using UUIDs to generate unique test data
+# Generate unique test data
 test_email = f"test_{uuid.uuid4()}@example.com"
+test_password = "secure_password_123"
 ```
 
 **Location:**
-- Test data generated within individual test functions
-- No centralized fixture files currently
+- Test data generated inline within test functions
+- No centralized fixture files detected
 
 ## Coverage
 
-**Requirements:** Not explicitly enforced in current configuration
-
+**Requirements:** Not explicitly enforced in configuration
 **View Coverage:**
 ```bash
 pytest --cov=src --cov-report=html
@@ -102,46 +96,65 @@ pytest --cov=src --cov-report=html
 ## Test Types
 
 **Unit Tests:**
-- Individual function/class testing
-- Currently limited in the codebase
+- Not detected; backend tests appear to be integration tests
 
 **Integration Tests:**
-- Full API endpoint testing using HTTP requests
+- API endpoint testing (e.g., `test_auth.py`)
+- Full CRUD operation testing (e.g., `test_crud_endpoints.py`)
+- Database interaction testing with real sessions
 - End-to-end workflow testing
-- Example: Authentication system tests (`test_auth.py`)
 
 **E2E Tests:**
-- Not implemented in current codebase
+- Not detected in current codebase
 
 ## Common Patterns
 
+**Setup/Teardown:**
+- Manual cleanup within tests
+- Database record cleanup using service methods
+- Unique identifiers to prevent test interference
+
 **Async Testing:**
-- Not currently used (FastAPI async endpoints tested with sync HTTP requests)
+- Not detected; synchronous testing patterns used
 
 **Error Testing:**
 ```python
-def test_login_invalid_credentials():
-    """Test logging in with invalid credentials."""
-    # Test setup
-    login_data = {
-        "email": "nonexistent@example.com",
-        "password": "wrong_password"
-    }
+# Positive case
+response = requests.post(...)
+assert response.status_code == 200
 
-    response = requests.post(f"{BASE_URL}/auth/login", json=login_data)
-
-    # Verify error response
-    assert response.status_code == 401, f"Expected 401, got {response.status_code}"
-
-    error_response = response.json()
-    assert "detail" in error_response
+# Negative case
+response = requests.post(...)  # Invalid input
+assert response.status_code == 401  # Or other appropriate error code
 ```
 
-**Setup/Cleanup:**
-- Test data uniqueness achieved through UUID generation
-- No explicit setup/teardown functions in current tests
-- Each test creates its own test user to ensure isolation
+**Test Organization:**
+- Related tests grouped in functions (e.g., `test_login_valid_credentials`)
+- Comprehensive test suites with multiple scenarios
+- Descriptive test names indicating specific functionality
+- Sequential test execution in single test runs
+
+## Backend Test Categories
+
+**Authentication Tests:** (`test_auth.py`)
+- User registration
+- Valid/invalid login credentials
+- Protected endpoint access
+- JWT token validation
+- Duplicate registration handling
+
+**CRUD Operation Tests:** (`test_crud_endpoints.py`)
+- Full Create, Read, Update, Delete cycle
+- Database transaction handling
+- Error condition testing
+- Data integrity verification
+
+**System Tests:** (`tests/` directory)
+- Chatbot integration
+- MCP tools unit tests
+- Security measures
+- Various functional tests
 
 ---
 
-*Testing analysis: 2026-02-03*
+*Testing analysis: 2026-02-04*

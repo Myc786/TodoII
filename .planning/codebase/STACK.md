@@ -1,12 +1,12 @@
 # Technology Stack
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
 ## Languages
 
 **Primary:**
-- Python 3.12.6 - Backend API and services (`backend/src/`)
-- TypeScript 5.2.2 - Frontend application (`frontend/src/`)
+- Python 3.11 - Backend API and services (`backend/`)
+- TypeScript 5.2 - Frontend application (`frontend/`)
 
 **Secondary:**
 - JavaScript - Frontend components and utilities
@@ -15,66 +15,68 @@
 ## Runtime
 
 **Environment:**
-- Python 3.12.6
-- Node.js v22.12.0
+- Python 3.11
+- Node.js (version not specified in package.json, but Next.js 14 requires Node 18+)
 
 **Package Manager:**
-- pip - Python dependencies
-- npm 10.9.2 - JavaScript/TypeScript dependencies
-- Lockfile: requirements.txt (Python), package-lock.json (JavaScript)
+- Poetry - Backend dependency management (`backend/pyproject.toml`)
+- npm - Frontend dependency management (`frontend/package.json`)
+- Lockfile: `backend/poetry.lock` and `frontend/package-lock.json` present
 
 ## Frameworks
 
 **Core:**
-- FastAPI 0.115.0 - Backend web framework (`backend/src/`)
-- Next.js 14.0.3 - Frontend framework (`frontend/src/`)
-- React 18.2.0 - Frontend UI library
+- FastAPI 0.115.0 - Backend web framework
+- Next.js 14.0.3 - Frontend React framework
+- React 18.2.0 - Frontend component library
 
 **Testing:**
-- Not explicitly configured in package manifests
+- pytest - Backend testing framework
+- Jest - Frontend testing (via Next.js built-in)
 
 **Build/Dev:**
-- Tailwind CSS - Styling framework
-- Vite/Bundler - Part of Next.js ecosystem
+- uvicorn - ASGI server for backend
+- Next.js development server - Frontend dev server
 
 ## Key Dependencies
 
 **Critical:**
-- sqlmodel 0.0.22 - Database ORM with SQLAlchemy and Pydantic integration
-- psycopg2-binary 2.9.9 - PostgreSQL database adapter
-- python-jose[cryptography] 3.3.0 - JWT token handling
-- uvicorn[standard] 0.36.0 - ASGI server
-- openai 1.70.0 - OpenAI API integration
+- sqlmodel 0.0.22 - Backend ORM/database modeling
+- psycopg2-binary 2.9.9 - PostgreSQL adapter
+- @auth/core 0.20.0 - Authentication framework
+- @modelcontextprotocol/sdk 1.0.0 - Model Context Protocol SDK
+- openai 1.70.0 (backend) and openai 4.0.0 (frontend) - OpenAI API clients
 
 **Infrastructure:**
+- python-jose[cryptography] 3.3.0 - JWT token handling
 - alembic 1.14.0 - Database migration tool
 - passlib[bcrypt] 1.7.4 - Password hashing
-- @auth/core 0.20.0 - Authentication core library
-- next-auth 4.24.5 - Next.js authentication library
+- tailwindcss - CSS styling framework
 
 ## Configuration
 
 **Environment:**
 - Backend: `.env` file with DATABASE_URL, BETTER_AUTH_SECRET, etc.
 - Frontend: `.env.local` with NEXT_PUBLIC_API_URL, NEXT_PUBLIC_BETTER_AUTH_URL, etc.
-- Key configs required: Database URL, authentication secret, API endpoints
+- Key configs required: API URLs, authentication secrets, database connections
 
 **Build:**
-- Frontend: `tsconfig.json`, `tailwind.config.js`, `postcss.config.js`
-- Backend: Standard Python packaging with `pyproject.toml`
+- Backend: `pyproject.toml` with poetry configuration
+- Frontend: `next.config.js` (not visible but implied by package.json)
 
 ## Platform Requirements
 
 **Development:**
-- Python 3.12+
+- Python 3.11+
 - Node.js 18+
-- SQLite (default) or PostgreSQL database
+- Poetry for backend dependency management
+- npm/yarn for frontend dependency management
 
 **Production:**
-- Web server capable of running FastAPI (backend)
-- Web server capable of serving Next.js application (frontend)
-- Database (SQLite or PostgreSQL)
+- Backend: ASGI-compatible server (uvicorn)
+- Frontend: Static hosting or Node.js server for SSR
+- Database: PostgreSQL (primary) or SQLite (development)
 
 ---
 
-*Stack analysis: 2026-02-03*
+*Stack analysis: 2026-02-04*

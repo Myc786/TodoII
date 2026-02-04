@@ -1,67 +1,70 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
 ## APIs & External Services
 
-**AI/ML Services:**
-- OpenAI API - Used for chatbot functionality
-  - SDK/Client: openai package (versions 1.70.0 backend, 4.0.0 frontend)
-  - Auth: NEXT_PUBLIC_OPENAI_API_KEY (inferred from usage)
+**AI/ML:**
+- OpenAI - AI-powered features and chatbot functionality
+  - SDK/Client: openai package (1.70.0 backend, 4.0.0 frontend)
+  - Auth: OPENAI_API_KEY environment variable (likely)
+
+**Authentication:**
+- Better Auth / @auth/core - Authentication framework
+  - SDK/Client: @auth/core 0.20.0, next-auth 4.24.5
+  - Auth: NEXT_PUBLIC_BETTER_AUTH_SECRET environment variable
 
 ## Data Storage
 
 **Databases:**
-- SQLite/PostgreSQL - Main application database
+- PostgreSQL 2.9.9 - Primary database client
   - Connection: DATABASE_URL environment variable
-  - Client: sqlmodel with psycopg2-binary for PostgreSQL
-
-**File Storage:**
-- Local filesystem only
-
-**Caching:**
-- None explicitly configured
+  - Client: psycopg2-binary with sqlmodel ORM
+- SQLite - Development/testing database
+  - Connection: DATABASE_URL="sqlite:///./todo_app.db"
 
 ## Authentication & Identity
 
 **Auth Provider:**
 - Custom JWT-based authentication
-  - Implementation: Custom JWT token generation with python-jose, argon2/bcrypt password hashing
+  - Implementation: python-jose for token handling, custom auth routes in FastAPI
+  - Token expiration: 30 minutes (ACCESS_TOKEN_EXPIRE_MINUTES)
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- None explicitly configured
+- None explicitly configured (no Sentry, Bugsnag, etc. detected)
 
 **Logs:**
-- Standard Python logging with configurable LOG_LEVEL environment variable
+- Standard logging via Python logging module
+- Console output for development
 
 ## CI/CD & Deployment
 
 **Hosting:**
-- Not explicitly configured in manifests (likely cloud platform agnostic)
+- Not explicitly configured (no Vercel, AWS, etc. detected in config)
 
 **CI Pipeline:**
-- None explicitly configured in manifests
+- None detected in repository (no GitHub Actions, CircleCI config files)
 
 ## Environment Configuration
 
 **Required env vars:**
-- BACKEND: DATABASE_URL, BETTER_AUTH_SECRET, BETTER_AUTH_URL, ENVIRONMENT, LOG_LEVEL
-- FRONTEND: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_BETTER_AUTH_URL, NEXT_PUBLIC_BETTER_AUTH_SECRET, NEXT_PUBLIC_BASE_URL
+- Backend: DATABASE_URL, BETTER_AUTH_SECRET, ENVIRONMENT, LOG_LEVEL
+- Frontend: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_BETTER_AUTH_URL, NEXT_PUBLIC_BETTER_AUTH_SECRET
 
 **Secrets location:**
-- .env files for backend, .env.local for frontend
+- .env files for backend and .env.local for frontend
 
 ## Webhooks & Callbacks
 
 **Incoming:**
-- None explicitly configured
+- None detected in codebase
 
 **Outgoing:**
-- OpenAI API calls for chatbot functionality
-- Potential webhook endpoints for external services (not explicitly configured)
+- OpenAI API calls for AI features
+- Potential webhook endpoints not explicitly defined in current codebase
 
 ---
 
-*Integration audit: 2026-02-03*
+*Integration audit: 2026-02-04*

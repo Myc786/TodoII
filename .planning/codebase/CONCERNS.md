@@ -1,101 +1,133 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
 ## Tech Debt
 
-**Chatbot Integration:**
-- Issue: Several TODO comments remain in the agent prompt system indicating incomplete chatbot functionality
-- Files: `D:\part2\backend\src\mcp_tools\agent_prompt.py`
-- Impact: Chatbot features are not fully implemented, affecting AI integration capabilities
-- Fix approach: Complete the TODO sections with proper system and user guidance prompts
+**Task Model Complexity:**
+- Issue: The TaskService contains complex logic for managing tags, optimistic locking, and serialization workarounds that violate single responsibility principle
+- Files: `D:\part2\backend\src\services\task_service.py`
+- Impact: Makes maintenance difficult and introduces potential bugs when modifying related functionality
+- Fix approach: Separate tag management into a dedicated service and refactor serialization logic
 
-**Large Test Files:**
-- Issue: Some test files are quite large (over 500 lines) which may indicate complex or bloated test suites
-- Files: `D:\part2\backend\tests\test_chatbot_integration.py` (540 lines), `D:\part2\backend\tests\test_mcp_tools_unit.py` (455 lines)
-- Impact: Large test files are harder to maintain and debug
-- Fix approach: Break down large test files into smaller, more focused test modules
+**Serialization Workarounds:**
+- Issue: Multiple places in TaskService use `hasattr(db_task, '__dict__')` and `object.__setattr__` to work around serialization issues
+- Files: `D:\part2\backend\src\services\task_service.py` (lines 260-269, 337-346)
+- Impact: Brittle code that could break with ORM updates and makes debugging difficult
+- Fix approach: Properly configure model relationships and serialization configuration
 
 ## Known Bugs
 
-**Passlib/Bcrypt Compatibility Issue:**
-- Symptoms: Warnings in logs about bcrypt version detection
-- Files: `D:\part2\backend\src\core\security.py`, logs in `D:\part2\backend\app.log`
-- Trigger: Using passlib with certain bcrypt versions on Windows
-- Workaround: Currently just logging warnings without breaking functionality
-- Log entry: "error reading bcrypt version" with AttributeError in passlib handlers
+**Invalid Tag ID Handling:**
+- Issue: When creating tasks with invalid tag IDs, the system attempts to create the task before validating tag IDs, leading to partial creation
+- Files: `D:\part2\backend\src\services\task_service.py`, `D:\part2\backend\test_crud_endpoints.py` (lines 135-154)
+- Trigger: Creating a task with malformed UUID in tag_ids
+- Workaround: Validation occurs too late in the process
+
+**Date Format Parsing:**
+- Issue: Inconsistent date format parsing in search_and_filter_tasks method could lead to silent failures
+- Files: `D:\part2\backend\src\services\task_service.py` (lines 410-438)
+- Trigger: Passing date strings in formats not explicitly handled
+- Workaround: Invalid date formats are silently ignored instead of throwing errors
 
 ## Security Considerations
 
-**Default Secret Key:**
-- Risk: The security module has a default secret key that should be changed in production
-- Files: `D:\part2\backend\src\core\security.py`
-- Current mitigation: Uses environment variable with default fallback
-- Recommendations: Ensure proper SECRET_KEY is set in all environments, especially production
+**Weak Secret Management:**
+- Issue: Default secret key hardcoded in security module with comment suggesting it should be changed in production
+- Files: `D:\part2\backend\src\core\security.py` (line 16)
+- Current mitigation: Environment variable override possible
+- Recommendations: Implement proper secret management and require explicit configuration
 
-**Password Length Limitation:**
-- Risk: Passwords longer than 72 bytes are truncated in the hashing function
-- Files: `D:\part2\backend\src\core\security.py`
-- Current mitigation: Automatic truncation to 72 bytes to avoid bcrypt limitation
-- Recommendations: Consider using Argon2 as primary scheme which doesn't have this limitation
+**Token Storage in Frontend:**
+- Issue: Frontend code retrieves tokens from localStorage which is vulnerable to XSS attacks
+- Files: `D:\part2\frontend\src\lib\api.ts` (lines 12)
+- Current mitigation: Bearer token in Authorization header
+- Recommendations: Implement secure cookie storage or HttpOnly cookies where possible
 
 ## Performance Bottlenecks
 
-**Database Query Efficiency:**
-- Problem: TaskService methods fetch tags separately for each task in loops, causing N+1 query problems
-- Files: `D:\part2\backend\src\services\task_service.py` (lines 33-39, 60-66, 101-103, etc.)
-- Cause: Tags are fetched individually for each task rather than with joins
-- Improvement path: Use JOIN queries or batch fetching to reduce database round trips
+**N+1 Query Problem:**
+- Issue: Task retrieval methods fetch tags separately for each task in loops instead of using JOIN queries
+- Files: `D:\part2\backend\src\services\task_service.py` (lines 35-43, 66-74, 169-185, 255-269, 476-485)
+- Cause: Inefficient tag loading in loops rather than bulk operations
+- Improvement path: Use SQL JOINs or bulk queries to load tags in a single operation
+
+**Redundant Database Commits:**
+- Issue: Multiple explicit session.commit() calls in single operations, causing performance degradation
+- Files: `D:\part2\backend\src\services\task_service.py` (lines 109, 286, 300)
+- Cause: Tag assignment and removal operations trigger separate commits
+- Improvement path: Batch operations and commit once at the end
 
 ## Fragile Areas
 
-**Authentication Dependency:**
-- Files: `D:\part2\backend\src\core\security.py`, `D:\part2\backend\src\api\routes\auth.py`
-- Why fragile: Authentication system relies on proper JWT token handling and session management
-- Safe modification: Changes to auth logic require comprehensive testing to prevent security vulnerabilities
-- Test coverage: Need to ensure all auth flows are properly tested
+**Optimistic Locking Implementation:**
+- Files: `D:\part2\backend\src\services\task_service.py`, `D:\part2\frontend\src\lib\api.ts`
+- Why fragile: Version checking is implemented in business logic rather than at the database level
+- Safe modification: Always ensure version is passed from frontend and validated in backend
+- Test coverage: Version mismatch scenarios need comprehensive testing
 
-**Circular Import Potential:**
-- Files: `D:\part2\backend\src\core\security.py` (line 145 shows import inside function to avoid circular import)
-- Why fragile: The system has potential for circular import issues
-- Safe modification: Be careful when adding new imports between auth/security modules
+**Tag Management System:**
+- Files: `D:\part2\backend\src\services\task_service.py`, `D:\part2\backend\src\models\task_tag.py`
+- Why fragile: Complex many-to-many relationship management with manual association handling
+- Safe modification: Changes to tag assignment logic require careful attention to transaction boundaries
+- Test coverage: Tag assignment/removal edge cases need thorough testing
 
 ## Scaling Limits
 
-**JWT Token Expiration:**
-- Current capacity: 30 minute access tokens
-- Limit: May cause poor user experience for long-running operations
-- Scaling path: Consider implementing refresh token rotation system
+**Pagination Limits:**
+- Current capacity: Hardcoded 100 item limit in multiple endpoints
+- Limit: Will cause performance issues with large datasets
+- Scaling path: Implement dynamic limits based on user preferences or system load
+
+**Database Connections:**
+- Current capacity: Not explicitly configured connection pooling
+- Limit: Could exhaust connections under high load
+- Scaling path: Configure proper connection pool sizes and timeouts
 
 ## Dependencies at Risk
 
-**Bcrypt/Passlib Compatibility:**
-- Package: `passlib` with `bcrypt`
-- Risk: Version incompatibility issues as seen in logs
-- Impact: Could affect password verification functionality
-- Migration plan: Consider switching to `argon2-cffi` as primary hasher
+**SQLModel:**
+- Risk: Heavy reliance on SQLModel which is less mature than alternatives like SQLAlchemy Core
+- Impact: Potential breaking changes or limited community support
+- Migration plan: Consider migration to SQLAlchemy Core if SQLModel doesn't mature
+
+**python-jose:**
+- Risk: python-jose has known security vulnerabilities and is not actively maintained
+- Impact: Potential JWT-related security issues
+- Migration plan: Switch to PyJWT or authlib for JWT handling
 
 ## Missing Critical Features
 
-**Password Reset Token Validation:**
-- Problem: Password reset functionality has placeholder implementation
-- Files: `D:\part2\backend\src\api\routes\auth.py` (lines 193-225)
-- Blocks: Complete password reset workflow cannot function until tokens are properly validated
+**Proper Error Logging:**
+- Problem: Limited structured logging throughout the application
+- Blocks: Effective debugging and monitoring in production
+- Files: Most backend services lack proper logging
+
+**Input Validation:**
+- Problem: Insufficient validation of user inputs beyond basic length checks
+- Blocks: Protection against injection attacks and data integrity issues
+- Files: `D:\part2\backend\src\api\routes\tasks.py` lacks comprehensive validation
 
 ## Test Coverage Gaps
 
-**Authentication Endpoint Testing:**
-- What's not tested: Password reset and token validation endpoints are not fully implemented/tested
-- Files: `D:\part2\backend\src\api\routes\auth.py`
-- Risk: Security vulnerabilities could go unnoticed in auth system
+**API Error Handling:**
+- What's not tested: Network error handling in frontend API client
+- Files: `D:\part2\frontend\src\lib\api.ts`
+- Risk: Frontend may fail silently during network issues
 - Priority: High
 
-**Error Handling in Task Service:**
-- What's not tested: Optimistic locking error scenarios are not well covered
+**Authentication Edge Cases:**
+- What's not tested: Token expiration and renewal scenarios
+- Files: `D:\part2\backend\src\core\security.py`, `D:\part2\frontend\src\lib\api.ts`
+- Risk: Users may experience unexpected logouts or security issues
+- Priority: High
+
+**Concurrent Access:**
+- What's not tested: Multiple users accessing same resources simultaneously
 - Files: `D:\part2\backend\src\services\task_service.py`
-- Risk: Race conditions and concurrent update issues may occur without proper testing
+- Risk: Race conditions and data inconsistencies
 - Priority: Medium
 
 ---
 
-*Concerns audit: 2026-02-03*
+*Concerns audit: 2026-02-04*

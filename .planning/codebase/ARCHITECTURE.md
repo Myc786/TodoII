@@ -1,132 +1,122 @@
 # Architecture
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
 ## Pattern Overview
 
-**Overall:** Full-stack web application with microservice-like separation between frontend and backend
+**Overall:** Full-stack web application with microservice-like architecture
 
 **Key Characteristics:**
-- Backend: REST API built with FastAPI
-- Frontend: Client-side rendered React application with Next.js
-- Database: SQLModel (SQLAlchemy + Pydantic) with PostgreSQL/SQLite support
-- Authentication: JWT-based with user isolation
+- Backend: FastAPI REST API with SQLModel/SQLAlchemy ORM
+- Frontend: Next.js 14 with React Server Components
+- Database: PostgreSQL with support for other databases via SQLModel
+- User isolation: Each user's data is isolated via user_id foreign keys
+- Feature-rich: Includes tasks, tags, reminders, recurrence, search, filtering
 
 ## Layers
 
-**Backend API Layer:**
-- Purpose: Expose REST endpoints for data operations
-- Location: `backend/src/api/`
-- Contains: Route definitions, request/response schemas, API logic
-- Depends on: Models, Services, Database
-- Used by: Frontend via HTTP requests
+**Frontend (Next.js):**
+- Purpose: User interface and client-side logic
+- Location: `D:\part2\frontend\`
+- Contains: Pages, components, hooks, API calls, styling
+- Depends on: Backend API endpoints
+- Used by: End users via browser
 
-**Service Layer:**
-- Purpose: Business logic and data operations with user isolation
-- Location: `backend/src/services/`
-- Contains: TaskService, authentication utilities, data processing
-- Depends on: Models, Database session
-- Used by: API layer
+**Backend API (FastAPI):**
+- Purpose: Business logic, data validation, authentication
+- Location: `D:\part2\backend\src\api\`
+- Contains: Route definitions, request/response schemas
+- Depends on: Services, Models, Database
+- Used by: Frontend and external clients
 
-**Data Layer:**
-- Purpose: Database models, relationships, and ORM operations
-- Location: `backend/src/models/`
-- Contains: SQLModel definitions for Task, User, Tag entities
-- Depends on: Database connection
-- Used by: Service and API layers
+**Services Layer:**
+- Purpose: Business logic implementation
+- Location: `D:\part2\backend\src\services\`
+- Contains: Service classes implementing CRUD operations
+- Depends on: Models, Database sessions
+- Used by: API routes
 
-**Frontend Components Layer:**
-- Purpose: UI rendering and user interaction
-- Location: `frontend/src/components/`
-- Contains: Task forms, lists, filters, authentication UI
-- Depends on: API client, React hooks
-- Used by: Pages
+**Models Layer:**
+- Purpose: Data structures and relationships
+- Location: `D:\part2\backend\src\models\`
+- Contains: SQLModel definitions, enums, schemas
+- Depends on: Database (SQLModel/SQLAlchemy)
+- Used by: Services, API routes
 
-**Frontend State Management:**
-- Purpose: Application state and data fetching
-- Location: `frontend/src/hooks/`, `frontend/src/lib/`
-- Contains: Authentication hooks, API client, type definitions
-- Depends on: API endpoints
-- Used by: Components and pages
+**Database Layer:**
+- Purpose: Data persistence and retrieval
+- Location: `D:\part2\backend\src\database\`
+- Contains: Database connection, session management
+- Depends on: PostgreSQL driver
+- Used by: Models, Services
 
 ## Data Flow
 
-**Task Creation Flow:**
+**Task Creation:**
 
-1. User submits form in `TaskForm` component (`frontend/src/components/task/task-form.tsx`)
-2. Frontend calls `apiClient.createTask()` in `DashboardPage` (`frontend/src/app/dashboard/page.tsx`)
-3. Request hits `/api/tasks/` POST endpoint in `backend/src/api/routes/tasks.py`
-4. Endpoint calls `TaskService.create_task()` with user context
-5. Service creates task in database with user_id association
-6. Response returns to frontend, updates local state
+1. Frontend sends POST request to `/api/tasks/` with task data
+2. FastAPI validates request against TaskCreate schema
+3. Authentication middleware verifies user JWT token
+4. TaskService.create_task() creates task in database with user_id
+5. Response returns created TaskRead object to frontend
 
-**Authentication Flow:**
+**Task Retrieval:**
 
-1. User logs in via auth pages (`frontend/src/app/login/page.tsx`)
-2. Credentials sent to `/api/auth/login` endpoint
-3. Backend validates credentials in `backend/src/api/routes/auth.py`
-4. JWT token generated and returned
-5. Frontend stores token and redirects to dashboard
+1. Frontend sends GET request to `/api/tasks/`
+2. Authentication middleware verifies user
+3. TaskService.get_tasks_by_user_id() retrieves user's tasks
+4. Database query filters by user_id
+5. Response returns list of user's tasks
 
 **State Management:**
-- Frontend: React useState and custom hooks manage local state
-- Backend: SQLModel ORM manages database state with session-based transactions
-- User isolation: All queries include user_id filters for security
+- Frontend: React state and Next.js server components
+- Backend: Database transactions and session management
+- Authentication: JWT tokens stored in cookies/local storage
 
 ## Key Abstractions
 
 **Task Model:**
-- Purpose: Represents a todo item with user ownership
-- Examples: `backend/src/models/task.py`
-- Pattern: SQLModel with UUID primary keys, optimistic locking via version field
+- Purpose: Represents a todo item with rich features
+- Examples: `D:\part2\backend\src\models\task.py`
+- Pattern: SQLModel with relationships to User, Tags, Reminders
 
 **TaskService:**
 - Purpose: Encapsulates business logic for task operations
-- Examples: `backend/src/services/task_service.py`
-- Pattern: Static methods with user_id validation for isolation
+- Examples: `D:\part2\backend\src\services\task_service.py`
+- Pattern: Static methods for CRUD operations with user isolation
 
-**API Router:**
-- Purpose: Organizes endpoints by domain
-- Examples: `backend/src/api/routes/`
+**API Routes:**
+- Purpose: Expose endpoints with authentication and validation
+- Examples: `D:\part2\backend\src\api\routes\tasks.py`
 - Pattern: FastAPI routers with dependency injection
-
-**Frontend API Client:**
-- Purpose: Abstracts HTTP requests to backend
-- Examples: `frontend/src/lib/api.ts`
-- Pattern: Wrapper around fetch with error handling and authentication headers
 
 ## Entry Points
 
 **Backend API:**
-- Location: `backend/src/main.py`
-- Triggers: HTTP requests to various endpoints
-- Responsibilities: Initialize FastAPI app, configure middleware, include routes
+- Location: `D:\part2\backend\src\main.py`
+- Triggers: HTTP requests to server
+- Responsibilities: Initialize FastAPI app, configure middleware, register routes
 
-**Frontend Dashboard:**
-- Location: `frontend/src/app/dashboard/page.tsx`
-- Triggers: User authentication and navigation
-- Responsibilities: Load tasks and tags, handle CRUD operations, manage UI state
-
-**Frontend Layout:**
-- Location: `frontend/src/app/layout.tsx`
-- Triggers: Initial page load
-- Responsibilities: Wrap app with auth and theme providers, initialize context
+**Frontend App:**
+- Location: `D:\part2\frontend\src\app\layout.tsx`
+- Triggers: Browser navigation
+- Responsibilities: Set up auth wrapper, theme provider, global providers
 
 ## Error Handling
 
-**Strategy:** Centralized error handling with HTTP status codes and meaningful messages
+**Strategy:** Comprehensive exception handling with HTTP status codes
 
 **Patterns:**
-- Backend: HTTPException with appropriate status codes (400, 401, 404, 409)
-- Frontend: Try/catch blocks with user-friendly feedback messages
-- Validation: Pydantic models for request/response validation
+- FastAPI HTTPExceptions for validation and business logic errors
+- Custom error responses with meaningful messages
+- Database transaction rollback on failures
 
 ## Cross-Cutting Concerns
 
-**Logging:** Python logging module with custom configuration in `backend/src/core/logging_config.py`
-**Validation:** Pydantic models for request/response validation and SQLModel for database validation
-**Authentication:** JWT tokens with middleware in FastAPI and session management in React
+**Logging:** Python logging module with custom configuration in `D:\part2\backend\src\core\logging_config.py`
+**Validation:** Pydantic models for request/response validation
+**Authentication:** JWT-based authentication with middleware in `D:\part2\backend\src\api\deps.py`
 
 ---
 
-*Architecture analysis: 2026-02-03*
+*Architecture analysis: 2026-02-04*

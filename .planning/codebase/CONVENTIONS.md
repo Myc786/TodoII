@@ -1,106 +1,98 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-02-03
+**Analysis Date:** 2026-02-04
 
-## Naming Patterns
+## Python Backend Conventions
 
-**Files:**
-- Python: snake_case (e.g., `task_service.py`, `task_schemas.py`)
-- TypeScript/React: kebab-case or PascalCase (e.g., `task-card.tsx`, `TaskForm.tsx`)
+**Naming:**
+- Files: snake_case (e.g., `task_service.py`, `task_schemas.py`)
+- Functions: snake_case (e.g., `get_task_by_id`, `create_task`)
+- Classes: PascalCase (e.g., `TaskService`, `TaskCreate`)
+- Variables: snake_case (e.g., `user_id`, `task_data`)
+- Constants: UPPER_SNAKE_CASE (e.g., `API_BASE_URL`)
 
-**Functions:**
-- Python: snake_case (e.g., `get_tasks_by_user_id`, `create_task`)
-- TypeScript: camelCase (e.g., `getAuthHeaders`, `createTask`)
+**Code Style:**
+- Formatting: Black formatter with 88 character line length (from pyproject.toml)
+- Linting: Flake8 and mypy (from pyproject.toml)
+- Type hints: Required for all public functions/methods
+- Line length: 88 characters maximum
 
-**Variables:**
-- Python: snake_case (e.g., `db_task`, `task_data`)
-- TypeScript: camelCase (e.g., `taskData`, `apiClient`)
+**Function Design:**
+- Functions follow docstring convention with Args/Returns sections
+- Error handling primarily through HTTPExceptions in API layer
+- Business logic separated in service classes
+- Database operations wrapped in services with session management
 
-**Types:**
-- TypeScript: PascalCase (e.g., `Task`, `ApiResponse`, `CreateTaskRequest`)
-
-## Code Style
-
-**Formatting:**
-- Python: Black formatter used (line length 88, Python 3.11 target)
-- TypeScript: Standard Next.js/React conventions with Prettier (likely used)
-
-**Linting:**
-- Python: MyPy for type checking, flake8 for style checking
-- TypeScript: Likely ESLint through Next.js defaults
-
-## Import Organization
-
-**Python:**
+**Import Organization:**
 - Standard library imports first
 - Third-party imports second
-- Local application imports last
-- Imports grouped with blank lines between groups
-
-**TypeScript:**
-- React and React-related imports first
-- Third-party libraries next
 - Local imports last
-- Absolute imports using `@/` alias (e.g., `@/components/ui/button`)
+- Each group separated by blank lines
 
-## Error Handling
+**Error Handling:**
+- HTTP endpoints raise HTTPException for API errors
+- Business logic raises ValueError for validation issues
+- Database operations return None/False for not found scenarios
+- Proper status codes: 400 for bad requests, 401 for unauthorized, 404 for not found, 409 for conflicts
 
-**Python:**
-- Exceptions raised with descriptive messages
-- Optimistic locking with version checking
-- Validation through Pydantic models
-- Database session management with commit/rollback patterns
+**Class Design:**
+- Service classes use static methods for business logic
+- Model classes use SQLModel with Pydantic-style validation
+- API routes organized in router modules
 
-**TypeScript:**
-- Try/catch blocks with error wrapping
-- ApiResponse interface for consistent error handling
-- HTTP status code checks (401 redirects to login)
-- Error message extraction from response bodies
+## TypeScript Frontend Conventions
 
-## Logging
+**Naming:**
+- Files: PascalCase for components (e.g., `TaskCard.tsx`), camelCase for utilities (e.g., `api.ts`)
+- Components: PascalCase (e.g., `TaskCard`, `TaskForm`)
+- Functions: camelCase (e.g., `getAuthHeaders`, `handleReminderSet`)
+- Variables: camelCase (e.g., `taskData`, `onToggle`)
+- Types: PascalCase (e.g., `Task`, `TaskCardProps`)
 
-**Framework:** Custom logging configuration with Python logging module
+**Code Style:**
+- Formatting: Standard Next.js/TypeScript formatting
+- Type safety: Strict TypeScript with explicit interfaces
+- Hooks: Follow React hooks conventions (useState, useEffect, etc.)
+- Component structure: Props interface, component function, JSX return
 
-**Patterns:**
-- Structured logging with levels (INFO, ERROR, DEBUG)
-- Context-rich messages with relevant identifiers
-- API request/response logging for debugging
+**Component Design:**
+- Functional components with TypeScript interfaces for props
+- Client components marked with `'use client'` directive
+- Composition over inheritance for UI building
+- Utility functions in separate modules (`lib/utils.ts`, `lib/task-helpers.ts`)
 
-## Comments
+**Import Organization:**
+- External libraries first (react, lucide-react, etc.)
+- UI components with path aliases (`@/components/ui/*`)
+- Internal modules with path aliases (`@/lib/*`, `@/components/*`)
+- Relative imports for closely related files
 
-**When to Comment:**
-- Complex business logic explanations
-- API endpoint documentation
-- Important architectural decisions inline
-- TODO/FIXME markers for future work
+**Error Handling:**
+- Try/catch blocks in async functions
+- Error responses with success/error properties
+- Network error handling with specific messaging
+- Console.error for debugging purposes
 
-**JSDoc/TSDoc:**
-- Docstrings for Python functions and classes following Google style
-- Type annotations used extensively in both Python and TypeScript
+## Cross-Cutting Conventions
 
-## Function Design
+**Security:**
+- Authorization headers for API requests
+- JWT tokens for authentication
+- Input validation at API boundaries
+- Password hashing with bcrypt
 
-**Size:** Functions kept relatively small and focused (single responsibility)
-- Python functions typically 10-30 lines
-- TypeScript functions typically 10-25 lines
+**API Communication:**
+- RESTful endpoints following standard conventions
+- Consistent response formats
+- Proper HTTP status codes
+- Versioning through API paths
 
-**Parameters:**
-- Python: Type hints using Union, Optional, List, Dict
-- TypeScript: Strict typing with interfaces and type definitions
-
-**Return Values:**
-- Python: Explicit return statements, None for no value
-- TypeScript: Consistent return types using ApiResponse pattern
-
-## Module Design
-
-**Exports:**
-- Python: Classes and functions exported directly
-- TypeScript: Named exports for components/functions, default export for main component
-
-**Barrel Files:**
-- Not extensively used in this codebase, but some index.ts files exist
+**Documentation:**
+- Comprehensive docstrings in Python functions
+- JSDoc-style comments in TypeScript
+- Type definitions for all API payloads
+- Inline comments for complex logic
 
 ---
 
-*Convention analysis: 2026-02-03*
+*Convention analysis: 2026-02-04*
