@@ -7,6 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.api.routes import router as api_router
 from src.core.config import ENVIRONMENT
 from src.core import logging_config
+from src.services.reminder_scheduler import initialize_reminder_scheduler
 import logging
 
 
@@ -25,9 +26,21 @@ def create_app() -> FastAPI:
     )
 
     # Add CORS middleware to allow frontend requests
+    if ENVIRONMENT == "development":
+        # Allow all origins in development
+        allowed_origins = ["*"]
+    else:
+        # Production: Restrict to specific frontend domains
+        allowed_origins = [
+            "https://frontend-mocha-beta-73.vercel.app",
+            "https://frontend-qmwqrks1n-myc786s-projects.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:3001"
+        ]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # In production, replace with specific origins
+        allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -42,6 +55,9 @@ def create_app() -> FastAPI:
         logger = logging_config.get_logger(__name__)
         logger.info("Health check accessed")
         return {"status": "healthy", "environment": ENVIRONMENT}
+
+    # Initialize the reminder scheduler
+    initialize_reminder_scheduler()
 
     return app
 
