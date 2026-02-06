@@ -1,7 +1,12 @@
 from sqlmodel import SQLModel
-from .session import get_engine
+from ..core.config import get_engine
 from ..models.user import User
 from ..models.task import Task
+from ..models.tag import Tag
+from ..models.task_tag import TaskTag
+from ..models.reminder import Reminder
+from ..models.conversation import Conversation
+from ..models.message import Message
 
 
 def create_db_and_tables():
@@ -12,6 +17,7 @@ def create_db_and_tables():
     all necessary tables exist in the database.
     """
     engine = get_engine()
+    # Ensure all models are properly registered before creating tables
     SQLModel.metadata.create_all(engine)
     print("Database tables created successfully!")
 

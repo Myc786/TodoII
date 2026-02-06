@@ -5,9 +5,11 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.api.routes import router as api_router
-from src.core.config import ENVIRONMENT
+from src.api.routes.chat import router as chat_router
+from src.core.config import ENVIRONMENT, settings
 from src.core import logging_config
 from src.services.reminder_scheduler import initialize_reminder_scheduler
+from src.database.init_db import create_db_and_tables
 import logging
 
 
@@ -31,9 +33,8 @@ def create_app() -> FastAPI:
         allowed_origins = ["*"]
     else:
         # Production: Restrict to specific frontend domains
-        allowed_origins = [
-            "https://frontend-mocha-beta-73.vercel.app",
-            "https://frontend-qmwqrks1n-myc786s-projects.vercel.app",
+        frontend_urls = settings.FRONTEND_URL.split(",")
+        allowed_origins = [url.strip() for url in frontend_urls] + [
             "http://localhost:3000",
             "http://localhost:3001"
         ]
@@ -48,6 +49,7 @@ def create_app() -> FastAPI:
 
     # Include API routes
     app.include_router(api_router, prefix="/api", tags=["tasks"])
+    app.include_router(chat_router)  # Chat routes already have /api prefix
 
     @app.get("/health")
     def health_check():
@@ -58,6 +60,18 @@ def create_app() -> FastAPI:
 
     # Initialize the reminder scheduler
     initialize_reminder_scheduler()
+
+    # Initialize database tables on startup
+    @app.on_event("startup")
+    def on_startup():
+        """Initialize database tables on application startup."""
+        logger = logging_config.get_logger(__name__)
+        logger.info("Initializing database tables...")
+        try:
+            create_db_and_tables()
+            logger.info("Database tables initialized successfully!")
+        except Exception as e:
+            logger.error(f"Error initializing database tables: {e}")
 
     return app
 
