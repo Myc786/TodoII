@@ -1,0 +1,215 @@
+# Task CRUD API Contracts
+# Feature: 001-fix-task-crud
+# Status: Existing endpoints - no changes required
+
+openapi: 3.0.3
+info:
+  title: Task CRUD API
+  description: Existing API contracts for task update, toggle, and delete operations
+  version: 1.0.0
+
+paths:
+  /api/tasks/{task_id}:
+    put:
+      summary: Update a task
+      description: Update task properties (title, description, completed, etc.)
+      operationId: updateTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '400':
+          description: Invalid request (validation error or version mismatch)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Task not found or doesn't belong to user
+      security:
+        - bearerAuth: []
+
+    delete:
+      summary: Delete a task
+      description: Permanently delete a task
+      operationId: deleteTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Task deleted successfully"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Task not found or doesn't belong to user
+      security:
+        - bearerAuth: []
+
+  /api/tasks/{task_id}/toggle:
+    patch:
+      summary: Toggle task completion
+      description: Toggle the completed status of a task
+      operationId: toggleTaskCompletion
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskToggle'
+      responses:
+        '200':
+          description: Task toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskRead'
+        '400':
+          description: Version mismatch (optimistic locking failure)
+        '401':
+          description: Unauthorized
+        '404':
+          description: Task not found or doesn't belong to user
+      security:
+        - bearerAuth: []
+
+components:
+  schemas:
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        priority:
+          type: string
+          enum: [high, medium, low]
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        recurrence_pattern:
+          type: string
+          nullable: true
+        tag_ids:
+          type: array
+          items:
+            type: string
+          nullable: true
+        version:
+          type: integer
+          description: Required for optimistic locking
+
+    TaskToggle:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: integer
+          description: Current task version for optimistic locking
+
+    TaskRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        user_id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        priority:
+          type: string
+        due_date:
+          type: string
+          format: date-time
+          nullable: true
+        recurrence_pattern:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagRead'
+
+    TagRead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

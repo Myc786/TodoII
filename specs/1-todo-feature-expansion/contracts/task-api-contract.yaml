@@ -1,0 +1,644 @@
+openapi: 3.0.3
+info:
+  title: Todo App Enhanced Task API
+  description: API contract for intermediate and advanced task features
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api
+    description: Local development server
+
+paths:
+  /tasks/search:
+    get:
+      summary: Search tasks with advanced filters
+      description: Search and filter tasks by various criteria including text, priority, tags, and due dates
+      parameters:
+        - name: q
+          in: query
+          description: Keyword search term for title/description
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by completion status
+          required: false
+          schema:
+            type: string
+            enum: [active, completed, all]
+        - name: priority
+          in: query
+          description: Filter by priority level
+          required: false
+          schema:
+            type: string
+            enum: [high, medium, low]
+        - name: tag_ids
+          in: query
+          description: Filter by tag IDs (comma-separated)
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: due_before
+          in: query
+          description: Filter tasks due before specified date
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: due_after
+          in: query
+          description: Filter tasks due after specified date
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: sort_by
+          in: query
+          description: Sort by specified field
+          required: false
+          schema:
+            type: string
+            enum: [due_date, priority, created_at, title]
+        - name: order
+          in: query
+          description: Sort order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+        - name: skip
+          in: query
+          description: Number of records to skip for pagination
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of records to return for pagination
+          required: false
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: Successful response with filtered tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /tasks/{task_id}/duplicate:
+    post:
+      summary: Duplicate a task
+      description: Create a copy of an existing task with same properties
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          description: ID of the task to duplicate
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task duplicated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Task not found
+
+  /tasks/recurrence:
+    post:
+      summary: Create recurring task
+      description: Create a task that generates recurring instances
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecurringTaskRequest'
+      responses:
+        '200':
+          description: Recurring task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /reminders:
+    post:
+      summary: Create a task reminder
+      description: Schedule a reminder for a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReminderRequest'
+      responses:
+        '200':
+          description: Reminder created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reminder'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /reminders/{reminder_id}:
+    delete:
+      summary: Delete a reminder
+      description: Remove a scheduled reminder
+      parameters:
+        - name: reminder_id
+          in: path
+          required: true
+          description: ID of the reminder to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reminder deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Reminder not found
+
+  /tags:
+    get:
+      summary: Get user's tags
+      description: Retrieve all tags belonging to the authenticated user
+      responses:
+        '200':
+          description: Successful response with user's tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      summary: Create a new tag
+      description: Create a new tag for the authenticated user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTagRequest'
+      responses:
+        '200':
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /tags/{tag_id}:
+    put:
+      summary: Update a tag
+      description: Update an existing tag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          description: ID of the tag to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTagRequest'
+      responses:
+        '200':
+          description: Tag updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Tag not found
+    delete:
+      summary: Delete a tag
+      description: Delete an existing tag
+      parameters:
+        - name: tag_id
+          in: path
+          required: true
+          description: ID of the tag to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Tag deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Tag not found
+
+components:
+  schemas:
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - user_id
+        - version
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the task
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Title of the task (1-200 characters)
+        description:
+          type: string
+          description: Optional description of the task
+        completed:
+          type: boolean
+          description: Boolean indicating if the task is completed
+        user_id:
+          type: string
+          format: uuid
+          description: Foreign key linking to the user who owns this task
+        version:
+          type: integer
+          description: Integer for optimistic locking
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was created
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the task was last updated
+        priority:
+          type: string
+          enum: [high, medium, low]
+          default: medium
+          description: Priority level of the task
+        due_date:
+          type: string
+          format: date-time
+          description: Due date for the task
+        recurrence_pattern:
+          type: string
+          description: JSON defining recurrence rules if task repeats
+        original_task_id:
+          type: string
+          format: uuid
+          description: Links to template for recurring instances
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          description: Associated tags
+
+    Tag:
+      type: object
+      required:
+        - id
+        - name
+        - user_id
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the tag
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Name of the tag (1-50 characters)
+        color:
+          type: string
+          pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          description: Hex color code for visual representation
+        user_id:
+          type: string
+          format: uuid
+          description: Foreign key linking to the user who owns this tag
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the tag was created
+
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Title of the task (1-200 characters)
+        description:
+          type: string
+          description: Optional description of the task
+        priority:
+          type: string
+          enum: [high, medium, low]
+          default: medium
+          description: Priority level of the task
+        due_date:
+          type: string
+          format: date-time
+          description: Due date for the task
+        recurrence_pattern:
+          type: string
+          description: JSON defining recurrence rules if task repeats
+        tag_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Array of tag IDs to associate with the task
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Title of the task (1-200 characters)
+        description:
+          type: string
+          description: Optional description of the task
+        completed:
+          type: boolean
+          description: Boolean indicating if the task is completed
+        priority:
+          type: string
+          enum: [high, medium, low]
+          description: Priority level of the task
+        due_date:
+          type: string
+          format: date-time
+          description: Due date for the task
+        recurrence_pattern:
+          type: string
+          description: JSON defining recurrence rules if task repeats
+        tag_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Array of tag IDs to associate with the task
+        version:
+          type: integer
+          description: Required for optimistic locking
+
+    CreateTagRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Name of the tag (1-50 characters)
+        color:
+          type: string
+          pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          description: Hex color code for visual representation
+
+    UpdateTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: Name of the tag (1-50 characters)
+        color:
+          type: string
+          pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+          description: Hex color code for visual representation
+
+    CreateRecurringTaskRequest:
+      type: object
+      required:
+        - title
+        - recurrence_pattern
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Title of the task (1-200 characters)
+        description:
+          type: string
+          description: Optional description of the task
+        priority:
+          type: string
+          enum: [high, medium, low]
+          default: medium
+          description: Priority level of the task
+        due_date:
+          type: string
+          format: date-time
+          description: Due date for the task
+        recurrence_pattern:
+          type: object
+          required:
+            - type
+            - interval
+          properties:
+            type:
+              type: string
+              enum: [daily, weekly, monthly, custom]
+              description: Type of recurrence
+            interval:
+              type: integer
+              minimum: 1
+              description: Interval for recurrence
+            days_of_week:
+              type: array
+              items:
+                type: integer
+                minimum: 0
+                maximum: 6
+              description: Days of the week for weekly recurrence (0=Sunday, 6=Saturday)
+            day_of_month:
+              type: integer
+              minimum: 1
+              maximum: 31
+              description: Day of the month for monthly recurrence
+            end_date:
+              type: string
+              format: date-time
+              description: End date for recurrence
+            occurrences:
+              type: integer
+              minimum: 1
+              description: Number of occurrences before stopping
+          description: Pattern for task recurrence
+
+    CreateReminderRequest:
+      type: object
+      required:
+        - task_id
+        - reminder_time
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: ID of the task to remind about
+        reminder_time:
+          type: string
+          format: date-time
+          description: Time to send the reminder
+        reminder_type:
+          type: string
+          enum: [email, browser_notification, both]
+          default: browser_notification
+          description: Type of reminder to send
+
+    Reminder:
+      type: object
+      required:
+        - id
+        - task_id
+        - reminder_time
+        - user_id
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the reminder
+        task_id:
+          type: string
+          format: uuid
+          description: ID of the task being reminded about
+        reminder_time:
+          type: string
+          format: date-time
+          description: Time when the reminder will be sent
+        reminder_type:
+          type: string
+          enum: [email, browser_notification, both]
+          description: Type of reminder
+        user_id:
+          type: string
+          format: uuid
+          description: ID of the user who owns this reminder
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the reminder was created
+        sent_at:
+          type: string
+          format: date-time
+          description: Timestamp when the reminder was sent (null if not sent)
+
+    ToggleTaskRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: integer
+          description: Required for optimistic locking
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+    ForbiddenError:
+      description: Access forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+    BadRequestError:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+
+security:
+  - BearerAuth: []
+
+securitySchemes:
+  BearerAuth:
+    type: http
+    scheme: bearer
+    bearerFormat: JWT

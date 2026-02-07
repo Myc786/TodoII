@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+/* Cross-browser compatibility fixes */
+/* Fallback for backdrop-filter in header */
+header {
+  background-color: hsl(var(--background) / 0.95);
+}
+
+/* For older browsers that don't support backdrop-filter */
+@supports (backdrop-filter: blur(1px)) {
+  header {
+    background-color: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(12px);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Theme Transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 3D Effects and Depth */
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), box-shadow 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.3s ease;
+  box-shadow:
+    0 10px 20px -10px rgba(0, 0, 0, 0.1),
+    0 6px 12px -8px rgba(0, 0, 0, 0.15),
+    0 4px 8px -6px rgba(0, 0, 0, 0.2);
+  will-change: transform, box-shadow;
+}
+
+.card-3d:hover {
+  transform: translateY(-6px) rotateX(5deg) rotateY(5deg);
+  box-shadow:
+    0 25px 50px -15px rgba(0, 0, 0, 0.25),
+    0 15px 30px -10px rgba(0, 0, 0, 0.3),
+    0 10px 20px -8px rgba(0, 0, 0, 0.35);
+}
+
+.card-3d:active {
+  transform: translateY(-3px) rotateX(2deg) rotateY(2deg);
+}
+
+/* Enhanced button 3D effects */
+.button-3d {
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), background-color 0.3s ease, color 0.3s ease;
+  will-change: transform;
+  border-radius: var(--radius);
+}
+
+.button-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.button-3d:hover::before {
+  left: 100%;
+}
+
+.button-3d:active {
+  transform: translateY(3px) scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced checkbox 3D effects */
+.checkbox-3d {
+  transform: translateZ(0);
+  transition: all 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.checkbox-3d:hover {
+  transform: scale(1.1) rotateX(10deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.checkbox-3d:active {
+  transform: scale(0.95) rotateX(5deg);
+}
+
+/* Text glow effects */
+.text-glow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: text-shadow 0.3s ease;
+}
+
+.text-glow-heavy {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Surface with enhanced 3D gradient */
+.surface-3d {
+  background: linear-gradient(145deg,
+    hsl(var(--card)),
+    hsl(var(--secondary)));
+  border-radius: calc(var(--radius) + 2px);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.05),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.1),
+    0 4px 8px -2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.surface-3d::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: calc(var(--radius) + 2px);
+  background: radial-gradient(
+    circle at 20% 20%,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+/* Enhanced 3D container */
+.container-3d {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Floating elements */
+.floating-element {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Reduce motion for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .card-3d,
+  .button-3d,
+  .checkbox-3d,
+  .floating-element {
+    transition: none;
+    transform: none;
+    animation: none;
+  }
+
+  .button-3d::before {
+    display: none;
+  }
+}
+
+/* Optimize for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .card-3d:hover {
+    transform: translateY(-3px); /* Less movement on touch devices */
+  }
+
+  .button-3d:hover::before {
+    opacity: 0.3; /* Show a subtle shine instead of full animation */
+    left: 0;
+  }
+}
+
+/* Theme-specific enhancements */
+.light .card-3d:hover {
+  box-shadow:
+    0 25px 50px -15px rgba(0, 0, 0, 0.15),
+    0 15px 30px -10px rgba(0, 0, 0, 0.2),
+    0 10px 20px -8px rgba(0, 0, 0, 0.25);
+}
+
+.dark .card-3d:hover {
+  box-shadow:
+    0 25px 50px -15px rgba(0, 0, 0, 0.4),
+    0 15px 30px -10px rgba(0, 0, 0, 0.5),
+    0 10px 20px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Enhanced depth for different elements */
+.depth-1 {
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+}
+
+.depth-2 {
+  box-shadow:
+    0 3px 6px 0 rgba(0, 0, 0, 0.15),
+    0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.depth-3 {
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.2),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.depth-4 {
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Glass morphism effect */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
