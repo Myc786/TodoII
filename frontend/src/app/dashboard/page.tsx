@@ -7,34 +7,43 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TaskList } from '@/components/task/task-list';
 import { TaskForm } from '@/components/task/task-form';
-import { TaskFilters } from '@/components/task/task-filters';
-import { Task } from '@/lib/types';
+import { TagManager } from '@/components/task/tag-manager';
+import { Task, Tag } from '@/lib/types';
 import apiClient from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'completed'>('all');
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     } else if (isAuthenticated) {
-      loadTasks();
+      loadTasksAndTags();
     }
   }, [isAuthenticated, isLoading, router]);
 
-  const loadTasks = async () => {
+  const loadTasksAndTags = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.getTasks();
-      if (response.success && response.data) {
-        setTasks(response.data);
+      // Load both tasks and tags
+      const [tasksResponse, tagsResponse] = await Promise.all([
+        apiClient.getTasks(),
+        apiClient.getTags()
+      ]);
+
+      if (tasksResponse.success && tasksResponse.data) {
+        setTasks(tasksResponse.data);
+      }
+
+      if (tagsResponse.success && tagsResponse.data) {
+        setTags(tagsResponse.data);
       }
     } catch (error) {
-      console.error('Failed to load tasks:', error);
+      console.error('Failed to load tasks or tags:', error);
     } finally {
       setLoading(false);
     }
@@ -48,8 +57,35 @@ export default function DashboardPage() {
     setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
   };
 
-  const handleTaskDeleted = (deletedTaskId: string) => {
-    setTasks(prev => prev.filter(task => task.id !== deletedTaskId));
+  const handleTaskDelete = async (taskId: string) => {
+    try {
+      const response = await apiClient.deleteTask(taskId);
+      if (response.success) {
+        setTasks(prev => prev.filter(task => task.id !== taskId));
+      } else {
+        console.error('Failed to delete task:', response.error);
+      }
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+    }
+  };
+
+  const handleTaskUpdate = async (taskId: string, updates: any) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const response = await apiClient.updateTask(taskId, {
+        ...updates,
+        version: task.version
+      });
+
+      if (response.success && response.data) {
+        handleTaskUpdated(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
   };
 
   const handleTaskToggle = async (taskId: string, version: number) => {
@@ -60,6 +96,45 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Failed to toggle task:', error);
+    }
+  };
+
+  // Tag management functions
+  const handleTagCreate = async (name: string, color?: string) => {
+    try {
+      const response = await apiClient.createTag({ name, color });
+      if (response.success && response.data) {
+        const newTag = response.data;
+        setTags(prev => [...prev, newTag]);
+      }
+    } catch (error) {
+      console.error('Failed to create tag:', error);
+    }
+  };
+
+  const handleTagDelete = async (id: string) => {
+    try {
+      await apiClient.deleteTag(id);
+      setTags(prev => prev.filter(tag => tag.id !== id));
+      // Also remove this tag from any tasks that had it
+      setTasks(prev => prev.map(task => ({
+        ...task,
+        tags: task.tags?.filter(tag => tag.id !== id)
+      })));
+    } catch (error) {
+      console.error('Failed to delete tag:', error);
+    }
+  };
+
+  const handleTagUpdate = async (id: string, name: string, color?: string) => {
+    try {
+      const response = await apiClient.updateTag(id, { name, color });
+      if (response.success && response.data) {
+        const updatedTag = response.data;
+        setTags(prev => prev.map(tag => tag.id === id ? updatedTag : tag));
+      }
+    } catch (error) {
+      console.error('Failed to update tag:', error);
     }
   };
 
@@ -84,17 +159,23 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
+      <header className="border-b glass-effect backdrop-blur-lg">
         <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">Todo Dashboard</h1>
+            <h1 className="text-xl font-bold text-glow-heavy">Todo Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
+            <TagManager
+              tags={tags}
+              onTagCreate={handleTagCreate}
+              onTagDelete={handleTagDelete}
+              onTagUpdate={handleTagUpdate}
+            />
+            <span className="text-sm text-glow">
               Welcome, {user?.name || user?.email}!
             </span>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
+            <Button variant="outline" size="sm" onClick={handleLogout} className="button-3d">
               Logout
             </Button>
           </div>
@@ -103,31 +184,30 @@ export default function DashboardPage() {
 
       <main className="container py-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          <Card>
+          <Card className="card-3d surface-3d depth-3">
             <CardHeader>
-              <CardTitle>Create New Task</CardTitle>
+              <CardTitle className="text-glow-heavy">Create New Task</CardTitle>
             </CardHeader>
             <CardContent>
-              <TaskForm onTaskCreated={handleTaskCreated} />
+              <TaskForm
+                onTaskCreated={handleTaskCreated}
+                availableTags={tags}
+              />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="card-3d surface-3d depth-3">
             <CardHeader>
-              <CardTitle>Your Tasks</CardTitle>
+              <CardTitle className="text-glow-heavy">Your Tasks</CardTitle>
             </CardHeader>
             <CardContent>
-              <TaskFilters activeFilter={activeFilter} onFilterChange={setActiveFilter} />
               <TaskList
-                tasks={tasks.filter(task => {
-                  if (activeFilter === 'active') return !task.completed;
-                  if (activeFilter === 'completed') return task.completed;
-                  return true; // 'all' filter
-                })}
+                tasks={tasks}
                 loading={loading}
                 onToggle={handleTaskToggle}
-                onUpdate={handleTaskUpdated}
-                onDelete={handleTaskDeleted}
+                onUpdate={handleTaskUpdate}
+                onDelete={handleTaskDelete}
+                availableTags={tags}
               />
             </CardContent>
           </Card>
