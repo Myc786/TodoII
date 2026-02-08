@@ -6,7 +6,6 @@ import { TypingIndicator } from './typing-indicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send } from 'lucide-react';
-import { useChatAuth } from '@/contexts/chat-auth-context';
 import { processNlpCommand } from '@/lib/chatbot-api';
 
 interface ChatPanelProps {
@@ -36,8 +35,6 @@ export function Panel({ userId, authToken }: ChatPanelProps) {
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { getAuthToken } = useChatAuth();
-
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
@@ -64,8 +61,8 @@ export function Panel({ userId, authToken }: ChatPanelProps) {
     setIsLoading(true);
 
     try {
-      // Get the auth token
-      const token = authToken || getAuthToken();
+      // Get the auth token from props or localStorage
+      const token = authToken || localStorage.getItem('access_token');
 
       if (!token) {
         throw new Error('Authentication token not available');

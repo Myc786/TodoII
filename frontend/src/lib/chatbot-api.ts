@@ -18,6 +18,7 @@ interface ChatResponse {
 }
 
 import { jwtDecode } from 'jwt-decode';
+import { authenticatedPost } from './api-client';
 
 /**
  * Extract user ID from JWT token
@@ -46,19 +47,23 @@ export async function processNlpCommand(command: string, authToken: string | nul
   }
 
   try {
-    // NEXT_PUBLIC_API_URL may include /api suffix, so we need the base URL
-    let API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    // Remove trailing /api if present to avoid double /api/api/
-    API_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
-    const response = await fetch(`${API_BASE_URL}/api/${userId}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify({
-        message: command
-      })
+    // NEXT_PUBLIC_API_URL should be the base path for API calls
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+    // Ensure we don't have trailing slash
+    const cleanApiUrl = API_URL.replace(/\/$/, '');
+
+    // Construct the chat endpoint URL: {base}/api/{userId}/chat or {base}/{userId}/chat
+    // If NEXT_PUBLIC_API_URL already ends in /api, we use it directly
+    const url = cleanApiUrl.endsWith('/api')
+      ? `${cleanApiUrl}/${userId}/chat`
+      : `${cleanApiUrl}/api/${userId}/chat`;
+
+    console.log(`[ChatAPI] Fetching: ${url}`);
+
+    // Use authenticated fetch with automatic token refresh
+    const response = await authenticatedPost(url, {
+      message: command
     });
 
     if (!response.ok) {

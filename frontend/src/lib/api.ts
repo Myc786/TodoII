@@ -3,6 +3,19 @@ import { Task, Tag, CreateTaskRequest, UpdateTaskRequest, ToggleTaskRequest, Cre
 // Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
+/**
+ * IMPORTANT: Trailing Slash Rules for Hugging Face Spaces
+ *
+ * To avoid HTTP 307 redirects that drop Authorization headers:
+ * - Collection endpoints (list, create): USE trailing slash
+ *   Examples: GET /api/tasks/, POST /api/tasks/
+ *
+ * - Item endpoints (get, update, delete): NO trailing slash
+ *   Examples: GET /api/tasks/{id}, PUT /api/tasks/{id}, DELETE /api/tasks/{id}
+ *
+ * See: TASK_ENDPOINT_INVESTIGATION.md for details
+ */
+
 // Helper function to get auth headers
 const getAuthHeaders = (): HeadersInit => {
   // Attempt to get token from multiple sources
@@ -92,7 +105,7 @@ export const apiClient = {
   // GET /tasks/{task_id} - Get a specific task
   getTaskById: async (taskId: string): Promise<ApiResponse<Task>> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/`, {
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
         method: 'GET',
         headers: getAuthHeaders(),
       });
@@ -119,7 +132,7 @@ export const apiClient = {
   // PUT /tasks/{task_id} - Update a specific task
   updateTask: async (taskId: string, taskData: UpdateTaskRequest): Promise<ApiResponse<Task>> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/`, {
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(taskData),
@@ -148,7 +161,7 @@ export const apiClient = {
   // PATCH /tasks/{task_id}/toggle - Toggle the completion status of a task
   toggleTaskCompletion: async (taskId: string, toggleData: ToggleTaskRequest): Promise<ApiResponse<Task>> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/toggle/`, {
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/toggle`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify(toggleData),
@@ -177,7 +190,7 @@ export const apiClient = {
   // DELETE /tasks/{task_id} - Delete a specific task
   deleteTask: async (taskId: string): Promise<ApiResponse<void>> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/`, {
+      const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
