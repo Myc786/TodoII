@@ -22,7 +22,9 @@ def get_openai_client() -> OpenAI:
     # Fall back to Cohere via compatibility API
     cohere_key = os.getenv("COHERE_API_KEY")
     if cohere_key:
-        base_url = os.getenv("OPENAI_COMPAT_BASE_URL", "https://api.cohere.ai/compatibility/v1")
+        # Strip any potential trailing/leading whitespace
+        cohere_key = cohere_key.strip()
+        base_url = os.getenv("OPENAI_COMPAT_BASE_URL", "https://api.cohere.ai/v1")  # Standard Cohere endpoint
         return OpenAI(base_url=base_url, api_key=cohere_key)
 
     # No API key configured
@@ -40,5 +42,5 @@ def get_model_name() -> str:
     if os.getenv("OPENAI_API_KEY"):
         return os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini")
 
-    # If using Cohere
+    # If using Cohere - Updated to use current model name
     return os.getenv("COHERE_MODEL_NAME", "command-r-plus-08-2024")

@@ -18,7 +18,9 @@ def test_live_ai():
     if not api_key:
         print("[FAIL] COHERE_API_KEY not found in .env")
         return False
-        
+
+    # Strip any potential trailing/leading whitespace
+    api_key = api_key.strip()
     print(f"Using API Key: {api_key[:5]}...{api_key[-5:]}")
     
     try:
