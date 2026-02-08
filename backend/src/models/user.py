@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from .reminder import Reminder
     from .task import Task
     from .tag import Tag
+    from .refresh_token import RefreshToken
 
 
 class UserBase(SQLModel):
@@ -26,21 +27,12 @@ class User(UserBase, table=True):
         created_at: Timestamp when the user was created
         updated_at: Timestamp when the user was last updated
     """
-    id: Optional[uuid.UUID] = Field(default=None, primary_key=True)  # Will be set by __init__
+    id: Optional[uuid.UUID] = Field(default=None, primary_key=True)
     password: Optional[str] = Field(default=None)  # Store hashed password
-    created_at: Optional[datetime] = Field(default=None)  # Will be set by __init__
-    updated_at: Optional[datetime] = Field(default=None)  # Will be set by __init__
+    created_at: Optional[datetime] = Field(default=None)
+    updated_at: Optional[datetime] = Field(default=None)
     is_active: bool = Field(default=True)
     is_verified: bool = Field(default=False)
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        if self.id is None:
-            self.id = uuid.uuid4()
-        if self.created_at is None:
-            self.created_at = datetime.utcnow()
-        if self.updated_at is None:
-            self.updated_at = datetime.utcnow()
 
     # Relationship to tasks
     tasks: List["Task"] = Relationship(back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
@@ -50,6 +42,9 @@ class User(UserBase, table=True):
 
     # Relationship to tags
     tags: List["Tag"] = Relationship(back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+
+    # Relationship to refresh tokens
+    refresh_tokens: List["RefreshToken"] = Relationship(back_populates="user", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class UserRead(UserBase):

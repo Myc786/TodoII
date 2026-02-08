@@ -57,6 +57,9 @@ def create_task(
     Returns:
         The created task
     """
+    print(f"[DEBUG create_task] Called by user: {current_user.email if current_user else 'None'}")
+    print(f"[DEBUG create_task] Task data: {task_create}")
+
     # Validate title length
     if not task_create.title or len(task_create.title.strip()) < 1 or len(task_create.title) > 200:
         raise HTTPException(

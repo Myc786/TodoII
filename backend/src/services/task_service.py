@@ -93,6 +93,11 @@ class TaskService:
         task_data['user_id'] = user_id
         task_data['version'] = 1  # Initialize version for optimistic locking
 
+        # Set default values for fields that need them
+        task_data['id'] = uuid.uuid4()
+        task_data['created_at'] = datetime.utcnow()
+        task_data['updated_at'] = datetime.utcnow()
+
         # Remove tag_ids and tags from task_data as they're not part of the Task model directly
         tag_ids = task_data.pop('tag_ids', [])
         task_data.pop('tags', None)  # Remove any tags field that might exist

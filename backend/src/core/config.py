@@ -28,16 +28,18 @@ class Settings:
     """Application settings configuration."""
 
     # Database settings
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./todo_app.db")
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DATABASE_URL: str = (os.getenv("DATABASE_URL") or "sqlite:///./todo_app.db").strip()
+    ENVIRONMENT: str = (os.getenv("ENVIRONMENT") or "development").strip()
 
     # JWT settings
-    JWT_SECRET_KEY: str = os.getenv("BETTER_AUTH_SECRET", "your-default-secret-key-change-in-production")
+    # Consolidate on BETTER_AUTH_SECRET as the primary key
+    JWT_SECRET_KEY: str = (os.getenv("BETTER_AUTH_SECRET") or os.getenv("JWT_SECRET_KEY") or "your-default-secret-key-change-in-production").strip()
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS") or "7")
 
     # Frontend URL for CORS
-    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    FRONTEND_URL: str = (os.getenv("FRONTEND_URL") or "http://localhost:3000").strip()
 
     # Engine configuration
     @property

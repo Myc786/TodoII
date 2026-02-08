@@ -26,7 +26,14 @@ def get_current_user(
     """
     # Extract the token from the Authorization header
     auth_header = request.headers.get("Authorization")
+
+    # Debug logging
+    print(f"[DEBUG get_current_user] Path: {request.url.path}")
+    print(f"[DEBUG get_current_user] Auth header present: {auth_header is not None}")
+    print(f"[DEBUG get_current_user] Auth header value: {auth_header[:50] if auth_header else 'None'}...")
+
     if not auth_header or not auth_header.startswith("Bearer "):
+        print(f"[DEBUG get_current_user] FAIL: Invalid or missing header")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing Authorization header",
@@ -34,21 +41,35 @@ def get_current_user(
         )
 
     token = auth_header.split(" ")[1]  # Extract token after "Bearer "
+    print(f"[DEBUG get_current_user] Token extracted: {token[:30]}...")
 
     # Verify the token and get user info
-    payload = verify_token_http_exception(token)
-    user_id = payload.get("sub")
+    try:
+        payload = verify_token_http_exception(token)
+        user_id = payload.get("sub")
+        print(f"[DEBUG get_current_user] Token valid, user_id: {user_id}")
+    except Exception as e:
+        print(f"[DEBUG get_current_user] Token verification failed: {e}")
+        raise
 
     # Retrieve the user from the database
     # Convert string ID back to UUID for database lookup
-    user = db.get(User, uuid.UUID(user_id))
+    try:
+        user = db.get(User, uuid.UUID(user_id))
+        print(f"[DEBUG get_current_user] User lookup: {'found' if user else 'not found'}")
+    except Exception as e:
+        print(f"[DEBUG get_current_user] Database error: {e}")
+        raise
+
     if not user:
+        print(f"[DEBUG get_current_user] FAIL: User not found in database")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    print(f"[DEBUG get_current_user] SUCCESS: User authenticated - {user.email}")
     return user
 
 

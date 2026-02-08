@@ -77,12 +77,3 @@ class Task(TaskBase, table=True):
 
     # Relationship to tags
     tags: list["Tag"] = Relationship(back_populates="tasks", link_model=TaskTag)
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        if self.id is None:
-            self.id = uuid.uuid4()
-        if self.created_at is None:
-            self.created_at = datetime.utcnow()
-        if self.updated_at is None:
-            self.updated_at = datetime.utcnow()
