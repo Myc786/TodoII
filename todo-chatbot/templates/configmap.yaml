@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "todo-chatbot.fullname" . }}-config
+  labels:
+    {{- include "todo-chatbot.labels" . | nindent 4 }}
+data:
+  {{- if .Values.backend.enabled }}
+  # Backend configuration
+  DATABASE_URL: {{ .Values.backend.env.DATABASE_URL | quote }}
+  ENVIRONMENT: {{ .Values.backend.env.ENVIRONMENT | quote }}
+  FRONTEND_URL: {{ .Values.backend.env.FRONTEND_URL | quote }}
+  REFRESH_TOKEN_EXPIRE_DAYS: {{ .Values.backend.env.REFRESH_TOKEN_EXPIRE_DAYS | quote }}
+  {{- end }}
+  {{- if .Values.frontend.enabled }}
+  # Frontend configuration
+  NEXT_PUBLIC_BASE_URL: {{ .Values.frontend.env.NEXT_PUBLIC_BASE_URL | quote }}
+  NEXT_PUBLIC_APP_NAME: {{ .Values.frontend.env.NEXT_PUBLIC_APP_NAME | quote }}
+  {{- end }}

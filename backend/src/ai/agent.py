@@ -1,9 +1,12 @@
 """AI agent for natural language task management using OpenAI SDK with Cohere."""
 import json
+import logging
 from typing import List, Dict, Any
 from ..mcp import tools as mcp_tools
 from .config import get_openai_client, get_model_name
 from .instructions import get_agent_instructions
+
+logger = logging.getLogger(__name__)
 
 
 class ChatAgent:
@@ -18,6 +21,9 @@ class ChatAgent:
         self.client = get_openai_client()
         self.model = get_model_name()
         self.instructions = get_agent_instructions()
+
+        # Log instructions loaded (first 100 chars to verify CRITICAL RULES)
+        logger.info(f"[AGENT INIT] Instructions loaded: {self.instructions[:100]}...")
 
         # Define available tools in OpenAI function calling format
         self.tools = [

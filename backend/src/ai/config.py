@@ -1,6 +1,9 @@
 """AI agent configuration for OpenAI or Cohere API."""
 import os
+import logging
 from openai import OpenAI
+
+logger = logging.getLogger(__name__)
 
 
 def get_openai_client() -> OpenAI:
@@ -25,6 +28,11 @@ def get_openai_client() -> OpenAI:
         # Strip any potential trailing/leading whitespace
         cohere_key = cohere_key.strip()
         base_url = os.getenv("OPENAI_COMPAT_BASE_URL", "https://api.cohere.ai/compatibility/v1")  # Cohere compatibility endpoint
+        model = os.getenv("COHERE_MODEL_NAME", "command-r-plus-08-2024")
+
+        # Log initialization (mask API key for security)
+        logger.info(f"[COHERE CONFIG] Client initialized with base_url: {base_url}, model: {model}, key: {cohere_key[:10]}...")
+
         return OpenAI(base_url=base_url, api_key=cohere_key)
 
     # No API key configured

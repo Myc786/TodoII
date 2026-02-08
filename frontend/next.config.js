@@ -4,6 +4,8 @@ const nextConfig = {
   images: {
     unoptimized: true, // Important for static exports
   },
+  // Enable standalone output for Docker
+  output: 'standalone',
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,

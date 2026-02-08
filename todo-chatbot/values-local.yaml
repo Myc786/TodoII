@@ -1,0 +1,138 @@
+# Local development values for todo-chatbot
+# Use this file for local Minikube deployment
+# Usage: helm install todo-chatbot . -f values-local.yaml
+
+# Backend service configuration
+backend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: todo-backend
+    pullPolicy: Never  # Use local images in Minikube
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8000
+  env:
+    DATABASE_URL: "sqlite:///./data/todo_app.db"
+    ENVIRONMENT: "development"
+    JWT_SECRET_KEY: "dev-secret-key-change-in-production"
+    BETTER_AUTH_SECRET: "dev-secret-key-change-in-production"
+    FRONTEND_URL: "http://todo-app.local"
+    REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Frontend service configuration
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: todo-frontend
+    pullPolicy: Never  # Use local images in Minikube
+    tag: "latest"
+  service:
+    type: NodePort
+    port: 3000
+    nodePort: 30080  # Access via Minikube IP:30080
+  env:
+    NEXT_PUBLIC_API_URL: "http://todo-app.local/api"
+    NEXT_PUBLIC_BETTER_AUTH_URL: "http://todo-app.local/api"
+    NEXT_PUBLIC_BASE_URL: "http://todo-app.local"
+    NEXT_PUBLIC_APP_NAME: "Todo App - Local Dev"
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 3000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Persistent volume for backend data
+persistence:
+  enabled: true
+  storageClass: "standard"  # Default Minikube storage class
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  path: /app/data
+
+# Ingress configuration for local development
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    - host: todo-app.local
+      paths:
+        - path: /api(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend: backend
+        - path: /()(.*)
+          pathType: ImplementationSpecific
+          backend: frontend
+  tls: []
+
+# Service account
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# Security context
+podSecurityContext: {}
+securityContext: {}
+
+# Autoscaling - disabled for local dev
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+# Node selector, tolerations, and affinity
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
