@@ -24,7 +24,7 @@ def get_openai_client() -> OpenAI:
     if cohere_key:
         # Strip any potential trailing/leading whitespace
         cohere_key = cohere_key.strip()
-        base_url = os.getenv("OPENAI_COMPAT_BASE_URL", "https://api.cohere.ai/v1")  # Standard Cohere endpoint
+        base_url = os.getenv("OPENAI_COMPAT_BASE_URL", "https://api.cohere.ai/compatibility/v1")  # Cohere compatibility endpoint
         return OpenAI(base_url=base_url, api_key=cohere_key)
 
     # No API key configured
